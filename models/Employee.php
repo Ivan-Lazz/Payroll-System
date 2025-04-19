@@ -25,7 +25,6 @@ class Employee {
         $this->firstname = htmlspecialchars(strip_tags($this->firstname));
         $this->lastname = htmlspecialchars(strip_tags($this->lastname));
         $this->contact_number = htmlspecialchars(strip_tags($this->contact_number));
-        $this->email = htmlspecialchars(strip_tags($this->email));
         $this->email = filter_var($this->email, FILTER_SANITIZE_EMAIL);
         $this->accounts = htmlspecialchars(strip_tags($this->accounts));
         

@@ -23,7 +23,6 @@ class Account{
         
         // Sanitize input
         $this->employee_id = htmlspecialchars(strip_tags($this->employee_id));
-        $this->account_email = htmlspecialchars(strip_tags($this->account_email));
         $this->account_email = filter_var($this->account_email, FILTER_SANITIZE_EMAIL);
         $this->account_pass = htmlspecialchars(strip_tags($this->account_pass));
         $this->account_type = htmlspecialchars(strip_tags($this->account_type));
