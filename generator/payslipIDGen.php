@@ -4,16 +4,16 @@ class PayslipIDGen{
 
     private $database;
     private $conn;
-    private $current_year;
+    // private $current_year;
     private $table_name = "payslip";
 
     public function __construct() {
         $this->database = new Database();
         $this->conn = $this->database->getConnection();
-        $this->current_year = date("Y");
+        // $this->current_year = date("Y");
     }
 
-    public function generate_employee_id() {
+    public function generate_payslip_no() {
         $last_id = $this->checkLastID();
 
         if ($last_id) {
@@ -26,22 +26,21 @@ class PayslipIDGen{
         }
 
         // Check if max has been reached
-        if ($next_number > 99999) {
-            throw new Exception("Maximum employee ID limit reached for year {$this->current_year}.");
+        if ($next_number > 99999999) {
+            throw new Exception("Maximum payslip no limit reached!");
         }
 
         // Pad number to 5 digits and return new ID
-        $padded = str_pad($next_number, 5, '0', STR_PAD_LEFT);
-        $payslip_no = $this->current_year . $padded;
+        $payslip_no = str_pad($next_number, 9, '0', STR_PAD_LEFT);
 
         return $payslip_no;
     }
 
     private function checkLastID() {
-        $query = "SELECT payslip_no FROM " . $this->table_name . " WHERE payslip_no LIKE :yearPrefix ORDER BY payslip_no DESC LIMIT 1";
+        $query = "SELECT payslip_no FROM " . $this->table_name . " ORDER BY payslip_no DESC LIMIT 1";
         $stmt = $this->conn->prepare($query);
-        $like = $this->current_year . '%';
-        $stmt->bindParam(':yearPrefix', $like);
+        // $like = $this->current_year . '%';
+        // $stmt->bindParam(':yearPrefix', $like);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? $row['payslip_no'] : null;

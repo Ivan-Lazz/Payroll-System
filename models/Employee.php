@@ -9,6 +9,7 @@ class Employee {
     public $lastname;
     public $contact_number;
     public $email;
+    public $accounts;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -16,7 +17,7 @@ class Employee {
 
     private function validateInput() {
         if (empty($this->firstname) || empty($this->lastname) || 
-            empty($this->contact_number) || empty($this->email)) {
+            empty($this->contact_number) || empty($this->email) || empty($this->accounts)) {
             return false;
         }
         
@@ -26,6 +27,7 @@ class Employee {
         $this->contact_number = htmlspecialchars(strip_tags($this->contact_number));
         $this->email = htmlspecialchars(strip_tags($this->email));
         $this->email = filter_var($this->email, FILTER_SANITIZE_EMAIL);
+        $this->accounts = htmlspecialchars(strip_tags($this->accounts));
         
         return true;
     }
@@ -45,7 +47,8 @@ class Employee {
                     firstname = :firstname,
                     lastname = :lastname,
                     contact_number = :contact_number,
-                    email = :email";
+                    email = :email
+                    accounts = :accounts";
 
         $stmt = $this->conn->prepare($query);
 
@@ -58,6 +61,7 @@ class Employee {
         $stmt->bindParam(":lastname", $this->lastname);
         $stmt->bindParam(":contact_number", $this->contact_number);
         $stmt->bindParam(":email", $this->email);
+        $stmt->bindParam(":accounts", $this->accounts);
 
         try {
             return $stmt->execute();
@@ -99,6 +103,7 @@ class Employee {
                     lastname = :lastname,
                     contact_number = :contact_number,
                     email = :email
+                    accounts = :accounts
                 WHERE employee_id = :employee_id";
 
         $stmt = $this->conn->prepare($query);
@@ -108,6 +113,7 @@ class Employee {
         $stmt->bindParam(":lastname", $this->lastname);
         $stmt->bindParam(":contact_number", $this->contact_number);
         $stmt->bindParam(":email", $this->email);
+        $stmt->bindParam(":accounts", $this->accounts);
         $stmt->bindParam(":employee_id", $this->employee_id);
 
         try {

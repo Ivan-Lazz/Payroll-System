@@ -116,6 +116,18 @@ class Account{
         }
     }
 
+    public function delete() {
+        $query = "DELETE FROM " . $this->table_name . " WHERE account_id = :account_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":account_id", $this->account_id);
+
+        try {
+            return $stmt->execute();
+        } catch(PDOException $e) {
+            return false;
+        }
+    }
+
     public function accountExists() {
         $query = "SELECT account_id FROM " . $this->table_name . " WHERE account_id = :account_id";
         $stmt = $this->conn->prepare($query);
