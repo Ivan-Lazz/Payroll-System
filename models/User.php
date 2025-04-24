@@ -3,27 +3,33 @@
 class User {
     private $conn;
     private $table_name = "users";
-
+    
     public $id;
     public $firstname;
     public $lastname;
     public $username;
     public $password;
+    
+    public $errors = [];
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
     private function validateInput() {
-        if (empty($this->firstname) || empty($this->lastname) || 
-            empty($this->username) || empty($this->password)) {
-            return false;
-        }
+        // Validation
+        if (empty($this->firstname)) $this->errors[] = "First name is required.";
+        if (empty($this->lastname)) $this->errors[] = "Last name is required.";
+        if (empty($this->username)) $this->errors[] = "Username is required.";
+        if (empty($this->password)) $this->errors[] = "Password is required.";
+        
+        if (!empty($this->errors)) return false;
         
         // Sanitize input
         $this->firstname = htmlspecialchars(strip_tags($this->firstname));
         $this->lastname = htmlspecialchars(strip_tags($this->lastname));
         $this->username = htmlspecialchars(strip_tags($this->username));
+        $this->password = htmlspecialchars(strip_tags($this->password));
         
         return true;
     }
