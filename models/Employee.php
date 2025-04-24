@@ -11,15 +11,21 @@ class Employee {
     public $email;
     public $accounts;
 
+    public $errors = [];
+
     public function __construct($db) {
         $this->conn = $db;
     }
 
     private function validateInput() {
-        if (empty($this->firstname) || empty($this->lastname) || 
-            empty($this->contact_number) || empty($this->email) || empty($this->accounts)) {
-            return false;
-        }
+        if (empty($this->employee_id)) $this->errors[] = "Employee ID is required.";
+        if (empty($this->firstname)) $this->errors[] = "First name is required.";
+        if (empty($this->lastname)) $this->errors[] = "Last name is required.";
+        if (empty($this->contact_number)) $this->errors[] = "Contact number is required.";
+        if (empty($this->email)) $this->errors[] = "Email is required.";
+        if (empty($this->accounts)) $this->errors[] = "Accounts are required.";
+
+        if (!empty($this->errors)) return false;
         
         // Sanitize input
         $this->firstname = htmlspecialchars(strip_tags($this->firstname));
@@ -141,6 +147,15 @@ class Employee {
         $stmt->bindParam(":last_name", $this->lastname);
         $stmt->execute();
         return $stmt->rowCount() > 0;
+    }
+
+    public function searchByName($name){
+        $query = "SELECT * FROM " . $this->table_name . " WHERE firstname LIKE :name OR lastname LIKE :name";
+        $stmt = $this->conn->prepare($query);
+        $name = "%$name%";
+        $stmt->bindParam(":name", $name);
+        $stmt->execute();
+        return $stmt;
     }
 }
 ?>

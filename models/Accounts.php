@@ -11,19 +11,31 @@ class Account{
     public $account_type;
     public $account_status;
 
+    public $errors = [];
+
     public function __construct($db) {
         $this->conn = $db;
     }
 
     private function validateInput() {
-        if (empty($this->employee_id) || empty($this->account_email) || 
-            empty($this->account_pass) || empty($this->account_type) || empty($this->account_status)) {
-            return false;
+        // Validation
+        if (empty($this->account_id)) $this->errors[] = "Account ID is required.";
+        if (empty($this->employee_id)) $this->errors[] = "Employee ID is required.";
+        if (empty($this->account_email)) $this->errors[] = "Email is required.";
+        if (empty($this->account_pass)) $this->errors[] = "Password is required.";
+        if (empty($this->account_type)) $this->errors[] = "Account type is required.";
+        if (empty($this->account_status)) $this->errors[] = "Account status is required.";
+
+        $this->account_email = filter_var($this->account_email, FILTER_SANITIZE_EMAIL);
+
+        if (!filter_var($this->account_email, FILTER_VALIDATE_EMAIL)) {
+            $this->errors[] = "Invalid email format.";
         }
+
+        if (!empty($this->errors)) return false;
         
         // Sanitize input
         $this->employee_id = htmlspecialchars(strip_tags($this->employee_id));
-        $this->account_email = filter_var($this->account_email, FILTER_SANITIZE_EMAIL);
         $this->account_pass = htmlspecialchars(strip_tags($this->account_pass));
         $this->account_type = htmlspecialchars(strip_tags($this->account_type));
         $this->account_status = htmlspecialchars(strip_tags($this->account_status));

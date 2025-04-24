@@ -9,15 +9,20 @@ class Banking{
     public $bank_account_number;
     public $bank_account_name;
 
+    public $errors = [];
+
     public function __construct($db) {
         $this->conn = $db;
     }
 
     private function validateInput() {
-        if (empty($this->employee_id) || empty($this->preferred_bank) || 
-            empty($this->bank_account_number) || empty($this->bank_account_name)) {
-            return false;
-        }
+        //Validation
+        if (empty($this->employee_id)) $this->errors[] = "Employee ID is required.";
+        if (empty($this->preferred_bank)) $this->errors[] = "Preferred bank is required.";
+        if (empty($this->bank_account_number)) $this->errors[] = "Bank account number is required.";
+        if (empty($this->bank_account_name)) $this->errors[] = "Bank account name is required.";
+        
+        if (!empty($this->errors)) return false;
         
         // Sanitize input
         $this->employee_id = htmlspecialchars(strip_tags($this->employee_id));

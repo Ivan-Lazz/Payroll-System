@@ -18,17 +18,24 @@ class Payslip{
     public $date_of_payment;
     public $payment_status;
 
+    public $errors = [];
+
     public function __construct($db) {
         $this->conn = $db;
     }
 
     private function validateInput() {
-        if (empty($this->employee_id) || empty($this->bank_account) || 
-            empty($this->salary) || empty($this->bonus) || empty($this->total_salary) || 
-            empty($this->person_in_charge) || empty($this->cutoff_date) || 
-            empty($this->date_of_payment) || empty($this->payment_status)) {
-            return false;
-        }
+        if (empty($this->employee_id)) $this->errors[] = "Employee ID is required.";
+        if (empty($this->bank_account)) $this->errors[] = "Bank account is required.";
+        if (empty($this->salary)) $this->errors[] = "Salary is required.";
+        if (empty($this->bonus)) $this->errors[] = "Bonus is required.";
+        if (empty($this->total_salary)) $this->errors[] = "Total salary is required.";
+        if (empty($this->person_in_charge)) $this->errors[] = "Person in charge is required.";
+        if (empty($this->cutoff_date)) $this->errors[] = "Cutoff date is required.";
+        if (empty($this->date_of_payment)) $this->errors[] = "Date of payment is required.";
+        if (empty($this->payment_status)) $this->errors[] = "Payment status is required.";
+
+        if (!empty($this->errors)) return false;
         
         // Sanitize input
         $this->employee_id = htmlspecialchars(strip_tags($this->employee_id));
