@@ -11,6 +11,8 @@ class User {
     public $password;
     
     public $errors = [];
+    public $pages;
+    public $records_per_page;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -24,7 +26,7 @@ class User {
         if (empty($this->password)) $this->errors[] = "Password is required.";
         
         if (!empty($this->errors)) return false;
-        
+
         // Sanitize input
         $this->firstname = htmlspecialchars(strip_tags($this->firstname));
         $this->lastname = htmlspecialchars(strip_tags($this->lastname));
@@ -69,10 +71,30 @@ class User {
     }
 
     public function read() {
-        $query = "SELECT * FROM " . $this->table_name;
+        $query = "SELECT firstname, lastname, username FROM " . $this->table_name;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
+    }
+
+    public function countData($search = "") {
+        // Prepare search query
+        $search = htmlspecialchars(strip_tags($search));
+        $search_term = "%" . $search . "%";
+        $where_clause = "";
+        if (!empty($search)) {
+            $where_clause = "WHERE firstname LIKE :search OR lastname LIKE :search OR username LIKE :search";
+        }
+        
+        // Count total records (with filter)
+        $count_query = "SELECT COUNT(*) as total FROM " . $this->table_name . " " . $where_clause;
+        $count_stmt = $this->conn->prepare($count_query);
+        if (!empty($search)) {
+            $count_stmt->bindParam(":search", $search_term);
+        }
+        $count_stmt->execute();
+
+        return $count_stmt;
     }
 
     public function readSingle($id) {
@@ -82,6 +104,44 @@ class User {
         $stmt->execute();
         return $stmt;
     }
+
+    public function readPaginated($search = "") {
+        // $this->pages = max(1, (int)$page);
+        // $this->records_per_page = max(1, (int)$records_per_page);
+        $offset = ($this->pages - 1) * $this->records_per_page;
+    
+        // Prepare search query
+        $search = htmlspecialchars(strip_tags($search));
+        $search_term = "%" . $search . "%";
+        $where_clause = "";
+        if (!empty($search)) {
+            $where_clause = "WHERE firstname LIKE :search OR lastname LIKE :search OR username LIKE :search";
+        }
+    
+        // Count total records (with filter)
+        $count_query = "SELECT COUNT(*) as total FROM " . $this->table_name . " " . $where_clause;
+        $count_stmt = $this->conn->prepare($count_query);
+        if (!empty($search)) {
+            $count_stmt->bindParam(":search", $search_term);
+        }
+        $count_stmt->execute();
+        $total_row = $count_stmt->fetch(PDO::FETCH_ASSOC);
+        $total_records = (int)$total_row['total'];
+        $total_pages = ceil($total_records / $this->records_per_page);
+    
+        // Get paginated data (with filter)
+        $query = "SELECT * FROM " . $this->table_name . " " . $where_clause . " ORDER BY id ASC LIMIT :offset, :records_per_page";
+        $stmt = $this->conn->prepare($query);
+        if (!empty($search)) {
+            $stmt->bindParam(":search", $search_term);
+        }
+        $stmt->bindParam(":offset", $offset, PDO::PARAM_INT);
+        $stmt->bindParam(":records_per_page", $this->records_per_page, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        return $stmt;
+    }
+    
 
     public function update() {
         // Modified validation for update
