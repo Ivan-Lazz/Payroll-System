@@ -12,6 +12,8 @@ class Account{
     public $account_status;
 
     public $errors = [];
+    public $pages;
+    public $records_per_page;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -94,6 +96,102 @@ class Account{
         $stmt->bindParam(":account_id", $id);
         $stmt->execute();
         return $stmt;
+    }
+
+    public function searchAccount($search = "", $acct_type = "") {
+        $type_clause = "";
+        $type = htmlspecialchars(strip_tags($acct_type));
+        $type_term = "%{$type}%";
+        if (!empty($acct_type)) {
+            $type_clause = "AND account_type LIKE :acct_type";
+        }
+        $query = "SELECT * FROM " . $this->table_name . " WHERE account_email LIKE :search OR account_id LIKE :search " . $type_clause;
+        $search = htmlspecialchars(strip_tags($search));
+        $stmt = $this->conn->prepare($query);
+        $search = "%{$search}%";
+        $stmt->bindParam(":search", $search);
+        if (!empty($acct_type)) {
+            $stmt->bindParam(":account_type", $acct_type);
+        }
+        $stmt->execute();
+        return $stmt;
+    }
+
+    public function countData($search = "", $acct_type = "") {
+        // Prepare search query
+        $search = htmlspecialchars(strip_tags($search));
+        $search_term = "%" . $search . "%";
+        $where_clause = "";
+        if (!empty($search)) {
+            $where_clause = "WHERE firstname LIKE :search OR lastname LIKE :search";
+        }
+        // Prepare account type query
+        $type_clause = "";
+        $type = htmlspecialchars(strip_tags($acct_type));
+        $type_term = "%{$type}%";
+        if (!empty($acct_type)) {
+            $type_clause = "AND account_type LIKE :acct_type";
+            $where_clause .= " " . $type_clause;
+        }
+        // Count total records (with filter)
+        $count_query = "SELECT COUNT(*) as total FROM " . $this->table_name . " " . $where_clause;
+        $count_stmt = $this->conn->prepare($count_query);
+        if (!empty($search)) {
+            $count_stmt->bindParam(":search", $search_term);
+        }
+        if (!empty($acct_type)) {
+            $count_stmt->bindParam(":account_type", $type_term);
+        }
+        $count_stmt->execute();
+
+        return $count_stmt;
+    }
+
+    public function readPaginated($search = "", $acct_type = "") {
+        $offset = ($this->pages - 1) * $this->records_per_page;
+    
+        // Prepare search query
+        $search = htmlspecialchars(strip_tags($search));
+        $search_term = "%" . $search . "%";
+        $where_clause = "";
+        if (!empty($search)) {
+            $where_clause = "WHERE firstname LIKE :search OR lastname LIKE :search OR username LIKE :search";
+        }
+
+        // Prepare account type query
+        $type_clause = "";
+        $type = htmlspecialchars(strip_tags($acct_type));
+        $type_term = "%{$type}%";
+        if (!empty($acct_type)) {
+            $type_clause = "AND account_type LIKE :acct_type";
+            $where_clause .= " " . $type_clause; 
+        }
+        
+        // Count total records (with filter)
+        $count_query = "SELECT COUNT(*) as total FROM " . $this->table_name . " " . $where_clause;
+        $count_stmt = $this->conn->prepare($count_query);
+        if (!empty($search)) {
+            $count_stmt->bindParam(":search", $search_term);
+        }
+        if (!empty($acct_type)) {
+            $count_stmt->bindParam(":account_type", $type_term);
+        }
+        $count_stmt->execute();
+    
+        // Fetch paginated data
+        $query = "SELECT * FROM " . $this->table_name . " " . $where_clause . " LIMIT :offset, :records_per_page";
+        $stmt = $this->conn->prepare($query);
+        if (!empty($search)) {
+            $stmt->bindParam(":search", $search_term);
+        }
+        $stmt->bindParam(":offset", $offset, PDO::PARAM_INT);
+        $stmt->bindParam(":records_per_page", $this->records_per_page, PDO::PARAM_INT);
+    
+        try {
+            return $stmt->execute();
+        } catch(PDOException $e) {
+            return false;
+        }
     }
 
     public function update() {

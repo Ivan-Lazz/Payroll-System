@@ -12,6 +12,8 @@ class Employee {
     public $accounts;
 
     public $errors = [];
+    public $pages;
+    public $records_per_page;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -90,6 +92,74 @@ class Employee {
         return $stmt;
     }
 
+    
+    public function searchEmployee($search = ""){
+        $query = "SELECT * FROM " . $this->table_name . " WHERE firstname LIKE :search OR lastname LIKE :search OR employee_id LIKE :search";
+        $stmt = $this->conn->prepare($query);
+        $search = htmlspecialchars(strip_tags($search));
+        $search_term = "%$search%";
+        $stmt->bindParam(":search", $search_term);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    public function countData($search = "") {
+        // Prepare search query
+        $search = htmlspecialchars(strip_tags($search));
+        $search_term = "%" . $search . "%";
+        $where_clause = "";
+        if (!empty($search)) {
+            $where_clause = "WHERE firstname LIKE :search OR lastname LIKE :search";
+        }
+        
+        // Count total records (with filter)
+        $count_query = "SELECT COUNT(*) as total FROM " . $this->table_name . " " . $where_clause;
+        $count_stmt = $this->conn->prepare($count_query);
+        if (!empty($search)) {
+            $count_stmt->bindParam(":search", $search_term);
+        }
+        $count_stmt->execute();
+
+        return $count_stmt;
+    }
+
+    public function readPaginated($search = "") {
+        // $this->pages = max(1, (int)$page);
+        // $this->records_per_page = max(1, (int)$records_per_page);
+        $offset = ($this->pages - 1) * $this->records_per_page;
+    
+        // Prepare search query
+        $search = htmlspecialchars(strip_tags($search));
+        $search_term = "%" . $search . "%";
+        $where_clause = "";
+        if (!empty($search)) {
+            $where_clause = "WHERE firstname LIKE :search OR lastname LIKE :search OR employee_id LIKE :search";
+        }
+    
+        // Count total records (with filter)
+        $count_query = "SELECT COUNT(*) as total FROM " . $this->table_name . " " . $where_clause;
+        $count_stmt = $this->conn->prepare($count_query);
+        if (!empty($search)) {
+            $count_stmt->bindParam(":search", $search_term);
+        }
+        $count_stmt->execute();
+        $total_row = $count_stmt->fetch(PDO::FETCH_ASSOC);
+        $total_records = (int)$total_row['total'];
+        $total_pages = ceil($total_records / $this->records_per_page);
+    
+        // Get paginated data (with filter)
+        $query = "SELECT * FROM " . $this->table_name . " " . $where_clause . " ORDER BY id ASC LIMIT :offset, :records_per_page";
+        $stmt = $this->conn->prepare($query);
+        if (!empty($search)) {
+            $stmt->bindParam(":search", $search_term);
+        }
+        $stmt->bindParam(":offset", $offset, PDO::PARAM_INT);
+        $stmt->bindParam(":records_per_page", $this->records_per_page, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        return $stmt;
+    }
+
     public function update() {
         // Modified validation for update
         if (empty($this->firstname) || empty($this->lastname) || empty($this->employee_id)) {
@@ -147,15 +217,6 @@ class Employee {
         $stmt->bindParam(":last_name", $this->lastname);
         $stmt->execute();
         return $stmt->rowCount() > 0;
-    }
-
-    public function searchByName($name){
-        $query = "SELECT * FROM " . $this->table_name . " WHERE firstname LIKE :name OR lastname LIKE :name";
-        $stmt = $this->conn->prepare($query);
-        $name = "%$name%";
-        $stmt->bindParam(":name", $name);
-        $stmt->execute();
-        return $stmt;
     }
 }
 ?>
