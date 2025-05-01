@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 16, 2025 at 11:17 PM
+-- Generation Time: May 01, 2025 at 10:24 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -32,7 +32,7 @@ CREATE TABLE `employees` (
   `first_name` varchar(100) NOT NULL,
   `last_name` varchar(100) NOT NULL,
   `contact_number` int(50) NOT NULL,
-  `email_address` varchar(100) NOT NULL
+  `email` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -74,7 +74,7 @@ CREATE TABLE `payslip` (
   `id` bigint(255) NOT NULL,
   `payslip_no` bigint(255) NOT NULL,
   `employee_id` varchar(255) NOT NULL,
-  `account_type` varchar(100) NOT NULL,
+  `bank_acct` int(100) NOT NULL,
   `amount` int(100) NOT NULL,
   `person_in_charge` varchar(100) NOT NULL,
   `cutoff_date` date NOT NULL,
@@ -124,7 +124,8 @@ ALTER TABLE `employee_banking_details`
 ALTER TABLE `payslip`
   ADD PRIMARY KEY (`id`),
   ADD KEY `payslip_no` (`payslip_no`),
-  ADD KEY `employee_id` (`employee_id`);
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `bank_acct` (`bank_acct`);
 
 --
 -- Indexes for table `users`
