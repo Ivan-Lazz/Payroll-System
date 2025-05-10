@@ -10,8 +10,8 @@ class Payslip{
     public $payslip_no;
     public $employee_id;
     public $bank_account;
-    // public $salary;
-    // public $bonus;
+    public $salary;
+    public $bonus;
     public $total_salary;
     public $person_in_charge;
     public $cutoff_date;
@@ -29,9 +29,9 @@ class Payslip{
     private function validateInput() {
         if (empty($this->employee_id)) $this->errors[] = "Employee ID is required.";
         if (empty($this->bank_account)) $this->errors[] = "Bank account is required.";
-        // if (empty($this->salary)) $this->errors[] = "Salary is required.";
-        // if (empty($this->bonus)) $this->errors[] = "Bonus is required.";
-        if (empty($this->total_salary)) $this->errors[] = "Salary is required.";
+        if (empty($this->salary)) $this->errors[] = "Salary is required.";
+        if (empty($this->bonus)) $this->errors[] = "Bonus is required.";
+        if (empty($this->total_salary)) $this->errors[] = "Total Salary is required.";
         if (empty($this->person_in_charge)) $this->errors[] = "Person in charge is required.";
         if (empty($this->cutoff_date)) $this->errors[] = "Cutoff date is required.";
         if (empty($this->date_of_payment)) $this->errors[] = "Date of payment is required.";
@@ -42,8 +42,8 @@ class Payslip{
         // Sanitize input
         $this->employee_id = htmlspecialchars(strip_tags($this->employee_id));
         $this->bank_account = htmlspecialchars(strip_tags($this->bank_account));
-        // $this->salary = htmlspecialchars(strip_tags($this->salary));
-        // $this->bonus = htmlspecialchars(strip_tags($this->bonus));
+        $this->salary = htmlspecialchars(strip_tags($this->salary));
+        $this->bonus = htmlspecialchars(strip_tags($this->bonus));
         $this->total_salary = htmlspecialchars(strip_tags($this->total_salary));
         $this->person_in_charge = htmlspecialchars(strip_tags($this->person_in_charge));
         $this->cutoff_date = htmlspecialchars(strip_tags($this->cutoff_date));
@@ -64,7 +64,9 @@ class Payslip{
                 SET payslip_no = :payslip_no,
                     employee_id = :employee_id,
                     bank_account = :bank_account,
-                    salary = :total_salary,
+                    salary = :salary,
+                    bonus = :bonus,
+                    amount = :total_salary,
                     person_in_charge = :person_in_charge,
                     cutoff_date = :cutoff_date,
                     date_of_payment = :date_of_payment,
@@ -76,8 +78,8 @@ class Payslip{
         $stmt->bindParam(":payslip_no", $this->payslip_no);
         $stmt->bindParam(":employee_id", $this->employee_id);
         $stmt->bindParam(":bank_account", $this->bank_account);
-        // $stmt->bindParam(":salary", $this->salary);
-        // $stmt->bindParam(":bonus", $this->bonus);
+        $stmt->bindParam(":salary", $this->salary);
+        $stmt->bindParam(":bonus", $this->bonus);
         $stmt->bindParam(":total_salary", $this->total_salary);
         $stmt->bindParam(":person_in_charge", $this->person_in_charge);
         $stmt->bindParam(":cutoff_date", $this->cutoff_date);
@@ -129,6 +131,8 @@ class Payslip{
             CONCAT_WS(' ', emp.first_name, emp.last_name) AS emp_name
             pay.bank_acct AS bank_acct
             bank.bank_details AS bank
+            pay.salary AS salary
+            pay.bonus AS bonus
             pay.amount AS amount
             pay.person_in_charge AS person_in_charge
             pay.cutoff_date AS cutoff

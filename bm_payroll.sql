@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 01, 2025 at 10:24 PM
+-- Generation Time: May 10, 2025 at 01:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -75,6 +75,8 @@ CREATE TABLE `payslip` (
   `payslip_no` bigint(255) NOT NULL,
   `employee_id` varchar(255) NOT NULL,
   `bank_acct` int(100) NOT NULL,
+  `salary` int(100) NOT NULL,
+  `bonus` int(100) NOT NULL,
   `amount` int(100) NOT NULL,
   `person_in_charge` varchar(100) NOT NULL,
   `cutoff_date` date NOT NULL,
